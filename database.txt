@@ -1,0 +1,41 @@
+create table users
+(
+    id         serial                  not null
+        constraint users_pk
+            primary key,
+    login      varchar(100)            not null,
+    password   varchar(255)            not null,
+    master_key varchar(255)            not null,
+    created_at timestamp default now() not null,
+    updated_at timestamp default now() not null
+);
+create table passwords
+(
+    id         serial                  not null
+        constraint passwords_pk
+            primary key,
+    user_id    integer                 not null
+        constraint passwords_users_id_fk
+            references users
+            on update cascade on delete cascade,
+    title      varchar(255)            not null,
+    username   varchar(255),
+    password   varchar(255)            not null,
+    salt       varchar(255)            not null,
+    url        varchar(2048),
+    category   varchar(100),
+    notes      text,
+    created_at timestamp default now() not null,
+    updated_at timestamp default now() not null,
+    deleted_at timestamp
+);
+create table logs
+(
+    id         serial                  not null
+        constraint logs_pk
+            primary key,
+    type       varchar(50)             not null,
+    ip_address varchar(50),
+    details    text                    not null,
+    created_at timestamp default now() not null
+);

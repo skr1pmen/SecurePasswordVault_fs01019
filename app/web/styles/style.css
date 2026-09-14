@@ -1,0 +1,46 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.container {
+    width: min(1200px, 95%);
+    margin: 0 auto;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 450px;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0 auto;
+
+    label {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        font-family: Arial, sans-serif;
+
+        input {
+            padding: 4px;
+        }
+    }
+    button {
+        width: 100%;
+        padding: 4px;
+        font-size: 18px;
+    }
+}
+
+.error {
+    position: absolute;
+    right: 1rem;
+    top: 1rem;
+    padding: 1rem 1.5rem;
+    background: #ffa6a6;
+    border-radius: 4px;
+}
