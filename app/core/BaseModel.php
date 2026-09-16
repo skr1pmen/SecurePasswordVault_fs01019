@@ -58,4 +58,16 @@ abstract class BaseModel
         $result = $this->query($sql, $params);
         return $result->rowCount();
     }
+
+    public function addLog($log, $type, $ip = null, $userId = null) {
+        $this->insert(
+            "INSERT INTO logs (type, ip_address, details, user_id) VALUES (:type, :ip, :log, :user_id)",
+            [
+                "type" => $type,
+                "ip" => $ip,
+                "log" => $log,
+                "user_id" => $userId
+            ]
+        );
+    }
 }

@@ -25,7 +25,7 @@ class UserModel extends BaseModel
         $masterKey = Encrypted::createMasterKey();
         $password = password_hash($password, PASSWORD_DEFAULT);
 
-        return $this->insert(
+        $userId = $this->insert(
             "INSERT INTO users (login, password, master_key) VALUES (:login, :password, :master_key)",
             [
                 "login" => $login,
@@ -33,10 +33,21 @@ class UserModel extends BaseModel
                 "master_key" => $masterKey
             ]
         );
+        if (!empty($userId)) {
+            $this->addLog(
+                "Пользователь с id {$userId} зарегистрировался",
+                "info",
+                $_SERVER['REMOTE_ADDR'],
+                $userId
+            );
+        }
+        return $userId;
     }
 
-    public function authByLogin($login, $password) {
-        $result = false;
+    public function login($data) {
+        $login = !empty($data['login']) ? trim($data['login']) : null;
+        $password = !empty($data['password']) ? trim($data['password']) : null;
+
         $error_message = '';
 
         if (empty($login)) {
@@ -56,9 +67,17 @@ class UserModel extends BaseModel
                 if (password_verify($password, $user[0]['password'])) {
                     $_SESSION['user']['id'] = $user[0]['id'];
                     $_SESSION['user']['login'] = $user[0]['login'];
-                    $_SESSION['user']['is_admin'] = $user[0]['is_admin'];
 
-                    $result = true;
+                    if (!empty($user[0]['id'])) {
+                        $this->addLog(
+                            "Пользователь с id {$user[0]['id']} авторизировался",
+                            "info",
+                            $_SERVER['REMOTE_ADDR'],
+                            $user[0]['id']
+                        );
+                    }
+
+                    return $user[0]['id'];
                 } else {
                     $error_message .= "Неверный пароль<br>";
                 }
@@ -67,9 +86,33 @@ class UserModel extends BaseModel
             }
         }
 
-        return [
-            'result' => $result,
-            'error_message' => $error_message
-        ];
+        $_SESSION['error'] = $error_message;
+        return null;
+    }
+
+    public function getDataUser($id) {
+        $user = $this->select(
+            "SELECT login, created_at FROM users WHERE id = :id",
+            ['id' => $id]
+        );
+        if (!empty($user[0])) {
+            return $user[0];
+        } else {
+            $this->addLog(
+                "Не удалось найти данные пользователя по id {$id}",
+                "error",
+                $_SERVER['REMOTE_ADDR'],
+                $_SESSION['user']['id']
+            );
+            return false;
+        }
+    }
+    public function getLogsByUser($id) {
+        $logs = $this->select(
+            "SELECT * FROM logs 
+         WHERE user_id = :id ORDER BY id DESC LIMIT 50",
+            ['id' => $id]
+        );
+        return $logs[0];
     }
 }

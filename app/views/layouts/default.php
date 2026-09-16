@@ -18,7 +18,7 @@
     <?= $content ?>
 </div>
 <div class="error" style="display: <?= empty($_SESSION['error']) ? 'none' : 'block' ?>">
-    <p><?= $_SESSION['error'] && null ?></p>
+    <p><?= empty($_SESSION['error']) ? null : $_SESSION['error'] ?></p>
 </div>
 </body>
 </html>
