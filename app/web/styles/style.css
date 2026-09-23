@@ -44,3 +44,14 @@
     background: #ffa6a6;
     border-radius: 4px;
 }
+header {
+    ul{
+        height: 50px;
+        list-style: none;
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        align-items: center;
+        font-size: 20px;
+    }
+}

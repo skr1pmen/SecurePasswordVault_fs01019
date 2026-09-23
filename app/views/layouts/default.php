@@ -14,6 +14,13 @@
     <title><?= $this->title ?></title>
 </head>
 <body>
+<header>
+    <ul>
+        <li><a href="/">Главная</a></li>
+        <li><a href="/user/profile">Профиль</a></li>
+        <li><a href="/user/logout">Выход</a></li>
+    </ul>
+</header>
 <div class="container">
     <?= $content ?>
 </div>

@@ -3,10 +3,34 @@
 namespace app\controllers;
 
 use app\core\InitController;
+use app\lib\UserOperation;
 use app\models\UserModel;
 
 class UserController extends InitController
 {
+    public function behaviors() {
+        return [
+            'access' => [
+                'rules' => [
+                    [
+                        'actions' => ['login', 'registration'],
+                        'roles' => [UserOperation::RoleGuest],
+                        'matchCallback' => function () {
+                            $this->redirect('/user/profile');
+                        }
+                    ],
+                    [
+                        'actions' => ['profile', 'logout'],
+                        'roles' => [UserOperation::RoleUser, UserOperation::RoleAdmin],
+                        'matchCallback' => function () {
+                            $this->redirect('/user/login');
+                        }
+                    ],
+                ]
+            ]
+        ];
+    }
+
     public function actionRegistration()
     {
         $this->view->title = "Страница регистрации";
@@ -49,5 +73,9 @@ class UserController extends InitController
                 'userLogs' => $userLogs
             ]
         );
+    }
+    public function actionLogout() {
+        unset($_SESSION['user']);
+        $this->redirect('/user/login');
     }
 }

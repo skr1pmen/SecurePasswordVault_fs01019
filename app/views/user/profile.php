@@ -11,7 +11,13 @@
     <hr>
     <ul>
         <?php foreach ($userLogs as $log): ?>
-            <li><?= $log ?></li>
+            <li>
+                <?= $log['id'] ?> |
+                <?= $log['type'] ?> |
+                <?= $log['ip_address'] ?> |
+                <?= $log['details'] ?> |
+                <?= $log['created_at'] ?>
+            </li>
         <?php endforeach; ?>
     </ul>
 </div>

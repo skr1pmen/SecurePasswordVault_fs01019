@@ -113,6 +113,6 @@ class UserModel extends BaseModel
          WHERE user_id = :id ORDER BY id DESC LIMIT 50",
             ['id' => $id]
         );
-        return $logs[0];
+        return $logs;
     }
 }
