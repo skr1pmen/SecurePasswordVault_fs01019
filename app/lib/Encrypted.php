@@ -20,22 +20,19 @@ class Encrypted
 
     public static function encrypted($masterKey, $data) {
         $nonce = random_bytes(16);
-        $tag = "";
+
         $result = openssl_encrypt(
             $data,
             'AES-256-CBC',
             self::fromBase64($masterKey),
             OPENSSL_RAW_DATA,
-            $nonce,
-            $tag,
-            '',
-            16
+            $nonce
         );
         if ($result == false) {
             $_SESSION['error'] = "Ошибка шифрования";
             return false;
         }
-        return $nonce.$tag.$result;
+        return $nonce.$result;
     }
 
     public static function decrypted($masterKey, $data) {

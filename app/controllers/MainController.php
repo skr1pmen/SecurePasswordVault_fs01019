@@ -3,6 +3,7 @@
 namespace app\controllers;
 
 use app\core\InitController;
+use app\models\MainModel;
 
 class MainController extends InitController
 {

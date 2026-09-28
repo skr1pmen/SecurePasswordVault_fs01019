@@ -3,6 +3,7 @@
 namespace app\models;
 
 use app\core\BaseModel;
+use app\lib\Encrypted;
 
 class MainModel extends BaseModel
 {
@@ -14,6 +15,15 @@ class MainModel extends BaseModel
         $category = !empty($data['category']) ? $data['category'] : null;
         $desc = !empty($data['desc']) ? $data['desc'] : null;
 
+        $masterKey = $this->select(
+            "SELECT master_key FROM users WHERE id = :id",
+            [
+                "id" => $_SESSION['user']['id']
+            ]
+        );
+        $crypto_pass = Encrypted::encrypted($masterKey[0]['master_key'], $password);
 
+        var_dump($crypto_pass);
+        var_dump(Encrypted::decrypted($masterKey[0]['master_key'], $crypto_pass));
     }
 }
