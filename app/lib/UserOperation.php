@@ -10,7 +10,7 @@ class UserOperation
 
     public static function getRoleUser() {
         $result = self::RoleGuest;
-        if (isset($_SESSION['user']['id']) && $_SESSION['user']['is_admin']) {
+        if (isset($_SESSION['user']['id']) && isset($_SESSION['user']['is_admin'])) {
             $result = self::RoleAdmin;
         } elseif (isset($_SESSION['user']['id'])) {
             $result = self::RoleUser;

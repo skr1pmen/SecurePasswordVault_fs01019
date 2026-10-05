@@ -47,4 +47,29 @@ class MainModel extends BaseModel
         }
         return false;
     }
+
+    public function getCountPasswordsByUser($user_id) {
+        $count = $this->select(
+            "SELECT COUNT(id) FROM passwords WHERE user_id = :user_id",
+            ['user_id' => $user_id]
+        );
+        if (!empty($count[0]['count'])) {
+            return $count[0]['count'];
+        }
+        return 0;
+    }
+
+    public function getPasswordsByUser($user_id) {
+        $passwords = $this->select(
+            "SELECT id, title FROM passwords 
+                 WHERE user_id = :user_id 
+                 ORDER BY updated_at DESC LIMIT 5",
+            ['user_id' => $user_id]
+        );
+
+        if (!empty($passwords)) {
+            return $passwords;
+        }
+        return [];
+    }
 }

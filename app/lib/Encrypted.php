@@ -32,10 +32,11 @@ class Encrypted
             $_SESSION['error'] = "Ошибка шифрования";
             return false;
         }
-        return $nonce.$result;
+        return self::toBase64($nonce.$result);
     }
 
     public static function decrypted($masterKey, $data) {
+        $data = self::fromBase64($data);
         $nonce = substr($data, 0, 16);
         $password = substr($data, 16);
 
