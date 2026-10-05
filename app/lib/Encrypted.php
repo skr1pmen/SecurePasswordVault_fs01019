@@ -37,16 +37,14 @@ class Encrypted
 
     public static function decrypted($masterKey, $data) {
         $nonce = substr($data, 0, 16);
-        $tag = substr($data, 16, 16);
-        $password = substr($data, 32);
+        $password = substr($data, 16);
 
         $result = openssl_decrypt(
           $password,
           'AES-256-CBC',
           self::fromBase64($masterKey),
           OPENSSL_RAW_DATA,
-          $nonce,
-          $tag
+          $nonce
         );
         if ($result == false) {
             $_SESSION['error'] = 'Ошибка расшифровки';

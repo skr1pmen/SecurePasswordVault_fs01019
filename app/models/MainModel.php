@@ -23,7 +23,28 @@ class MainModel extends BaseModel
         );
         $crypto_pass = Encrypted::encrypted($masterKey[0]['master_key'], $password);
 
-        var_dump($crypto_pass);
-        var_dump(Encrypted::decrypted($masterKey[0]['master_key'], $crypto_pass));
+        $id = $this->insert(
+            'INSERT INTO passwords (user_id, title, username, password, url, category, notes)
+                    VALUES (:user_id, :title, :name, :password, :url, :category, :desc)',
+            [
+                "user_id" => $_SESSION['user']['id'],
+                "title" => $name,
+                "name" => $login,
+                "password" => $crypto_pass,
+                "url" => $url,
+                "category" => $category,
+                "desc" => $desc
+            ]
+        );
+        if (!empty($id)) {
+            $this->addLog(
+                "Пользователь создал новую запись с id: {$id}",
+                "info",
+                $_SERVER['REMOTE_ADDR'],
+                $_SESSION['user']['id']
+            );
+            return true;
+        }
+        return false;
     }
 }
