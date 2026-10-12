@@ -102,4 +102,57 @@ class MainController extends InitController
         $this->view->title = "Редактирование записи: ".$data['title'];
         $this->render("edit", ['data' => $data]);
     }
+
+    public function actionDelete() {
+        if (empty($_GET['id'])) {
+            $this->redirect('/');
+        }
+
+        $id = $_GET['id'];
+        $mainModel = new MainModel();
+        $result = $mainModel->deletePassword($id);
+        if (!empty($result)) {
+            $this->redirect('/');
+        }
+        $_SESSION['error'] = 'Не удалось переместить запись в корзину';
+        $this->redirect('/main/password?id='.$id);
+    }
+
+    public function actionBasket() {
+        $this->view->title = "Корзина";
+
+        $mainModel = new MainModel();
+
+        if (empty($_GET['recovery']) || empty($_GET['delete'])) {
+            $data = $mainModel->getBasketData($_SESSION['user']['id']);
+            $this->render("basket", ['data' => $data]);
+        }
+        if (!empty($_GET['recovery'])) {
+            $id = $_GET['recovery'];
+            $mainModel->recoveryPassword($id);
+            $this->redirect("/main/basket");
+        }
+        if (!empty($_GET['delete'])) {
+            $id = $_GET['delete'];
+            $mainModel->destructionPassword($id);
+            $this->redirect("/main/basket");
+        }
+    }
+
+    public function actionGeneration() {
+        $this->view->title = "Генерация пароля";
+
+        if ($_SERVER["REQUEST_METHOD"] == "POST") {
+            $useUppercase = $_POST["uppercase"];
+            $useDigits = $_POST["digits"];
+            $useSymbol = $_POST["symbol"];
+            $passLength = $_POST["length"];
+            $mainModel = new MainModel();
+            $password = $mainModel->generatePassword($passLength, $useUppercase, $useDigits, $useSymbol);
+
+            $this->render("generation", ['password' => $password]);
+        }
+
+        $this->render("generation");
+    }
 }

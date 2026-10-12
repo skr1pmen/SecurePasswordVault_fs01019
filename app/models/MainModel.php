@@ -65,7 +65,7 @@ class MainModel extends BaseModel
     {
         $passwords = $this->select(
             "SELECT id, title FROM passwords 
-                 WHERE user_id = :user_id 
+                 WHERE user_id = :user_id AND deleted_at IS NULL
                  ORDER BY updated_at DESC LIMIT 5",
             ['user_id' => $user_id]
         );
@@ -141,5 +141,60 @@ class MainModel extends BaseModel
         );
         if (!empty($result)) return true;
         return false;
+    }
+
+    public function deletePassword($id) {
+        return $this->update(
+            "UPDATE passwords SET deleted_at = NOW() WHERE id = :id",
+            ["id" => $id]
+        );
+    }
+
+    public function getBasketData($user_id) {
+        $passwords = $this->select(
+            "SELECT id, title FROM passwords 
+                 WHERE user_id = :user_id AND deleted_at IS NOT NULL
+                 ORDER BY deleted_at DESC",
+            ['user_id' => $user_id]
+        );
+
+        if (!empty($passwords)) {
+            return $passwords;
+        }
+        return [];
+    }
+
+    public function recoveryPassword($id) {
+        $result = $this->update(
+            "UPDATE passwords SET deleted_at = NULL WHERE id = :id",
+            ["id" => $id]
+        );
+        if (empty($result)) {
+            $_SESSION['error'] = "Ошибка восстановления";
+        }
+    }
+
+    public function destructionPassword($id) {
+        $result = $this->delete(
+            "DELETE FROM passwords WHERE id = :id",
+            ["id" => $id]
+        );
+        if (empty($result)) {
+            $_SESSION['error'] = "Ошибка удаления ";
+        }
+    }
+
+    public function generatePassword($length, $useUppercase, $useDigits, $useSymbol) {
+        $lowercase = 'qwertyuiopasdfghjklzxcvbnm';
+        $uppercase = 'QWERTYUIOPASDFGHJKLZXCVBNM';
+        $digits = '1234567890';
+        $symbols = "!@#$%^&*()_-+={}[]?/";
+
+        $all = [];
+        $all[] = $lowercase;
+        if ($useUppercase) $all[] = $uppercase;
+        if ($useDigits) $all[] = $digits;
+        if ($useSymbol) $all[] = $symbols;
+
     }
 }

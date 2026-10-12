@@ -18,6 +18,7 @@
     <ul>
         <li><a href="/">Главная</a></li>
         <li><a href="/user/profile">Профиль</a></li>
+        <li><a href="/main/basket">Корзина</a></li>
         <li><a href="/user/logout">Выход</a></li>
     </ul>
 </header>
