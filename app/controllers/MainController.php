@@ -3,6 +3,7 @@
 namespace app\controllers;
 
 use app\core\InitController;
+use app\lib\Encrypted;
 use app\lib\UserOperation;
 use app\models\MainModel;
 
@@ -46,11 +47,18 @@ class MainController extends InitController
 
         $id = $_GET['id'];
         $mainModel = new MainModel();
-        $data = $mainModel->getDataByPassword($id);
+        $isShow = false;
+        if (!empty($_GET['show'])) {
+            if ($_GET['show'] === 'true') {
+                $isShow = true;
+            }
+        }
+        $data = $mainModel->getDataByPassword($id, $isShow);
 
         if (empty($data)) {
             $this->redirect('/');
         }
+
         $this->view->title = $data['title'];
         $this->render("password", ['data' => $data]);
     }
@@ -68,5 +76,30 @@ class MainController extends InitController
         }
 
         $this->render("new");
+    }
+
+    public function actionEdit() {
+        if (empty($_GET['id'])) {
+            $this->redirect('/');
+        }
+
+        $id = $_GET['id'];
+        $mainModel = new MainModel();
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $result = $mainModel->editPassword($id, $_POST);
+
+            if ($result) {
+                $this->redirect("/main/password?id=" . $id);
+            }
+        }
+
+        $data = $mainModel->getDataByPassword($id, true);
+
+        if (empty($data)) {
+            $this->redirect('/');
+        }
+
+        $this->view->title = "Редактирование записи: ".$data['title'];
+        $this->render("edit", ['data' => $data]);
     }
 }
