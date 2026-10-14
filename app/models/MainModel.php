@@ -196,5 +196,71 @@ class MainModel extends BaseModel
         if ($useDigits) $all[] = $digits;
         if ($useSymbol) $all[] = $symbols;
 
+        $passwords = [];
+        for ($i = 0; $i < 10; $i++) {
+            $password = "";
+            foreach ($all as $category) {
+                $password .= $category[random_int(0, strlen($category) - 1)];
+            }
+            $all_ = implode("", $all);
+            for ($j = 0; $password < ($length - strlen($password)); $j++) {
+                $password .= $all_[random_int(0, strlen($all_) - 1)];
+            }
+            $passwords[] = str_shuffle($password);
+        }
+        return $passwords;
+    }
+
+    public function exportPassword($type, $password) {
+        $user = $this->select(
+            "SELECT password FROM users WHERE id = :id",
+            ['id' => $_SESSION['user']['id']]
+        );
+        if (empty($user)) {
+            $_SESSION['error'] = "Произошла неизвестная ошибка!";
+            return false;
+        }
+        if (!password_verify($password, $user[0]['password'])) {
+            $_SESSION['error'] = "Неверный пароль!";
+            return false;
+        }
+
+        $data = $this->select(
+            "SELECT title, username, password, url, category, notes, created_at, updated_at 
+                    FROM passwords 
+                    WHERE user_id = :id AND deleted_at IS NULL",
+            ["id" => $_SESSION['user']['id']]
+        );
+        if ($type === "json") {
+            // Формат JSON
+//            $fp = fopen('passwords.json', 'w');
+//            fwrite($fp, "[\n");
+//            $total = count($data);
+//            foreach ($data as $i => $item) {
+//                fwrite($fp, json_encode($item, JSON_UNESCAPED_UNICODE));
+//                if ($i < $total - 1) {
+//                    fwrite($fp, ",\n");
+//                } else {
+//                    fwrite($fp, "\n");
+//                }
+//            }
+//            fwrite($fp, "]");
+//            fclose($fp);
+//
+//            header('Content-Type: application/json');
+//            header('Content-Disposition: attachment; filename="passwords.json"');
+//            readfile('passwords.json');
+//            exit;
+
+
+//            $dataJson = '';
+//            foreach ($data as $item) {
+//                $dataJson .= json_encode($item);
+//            }
+//            var_dump($dataJson);
+        } else {
+            // Формат CSV
+
+        }
     }
 }

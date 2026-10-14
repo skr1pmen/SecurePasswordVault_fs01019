@@ -141,18 +141,29 @@ class MainController extends InitController
 
     public function actionGeneration() {
         $this->view->title = "Генерация пароля";
+        $password = [];
 
         if ($_SERVER["REQUEST_METHOD"] == "POST") {
-            $useUppercase = $_POST["uppercase"];
-            $useDigits = $_POST["digits"];
-            $useSymbol = $_POST["symbol"];
+            $useUppercase = empty($_POST["uppercase"]) ? false : true;
+            $useDigits = empty($_POST["digits"]) ? false : true;
+            $useSymbol = empty($_POST["symbol"]) ? false : true;
             $passLength = $_POST["length"];
             $mainModel = new MainModel();
             $password = $mainModel->generatePassword($passLength, $useUppercase, $useDigits, $useSymbol);
-
-            $this->render("generation", ['password' => $password]);
         }
 
-        $this->render("generation");
+        $this->render("generation", ['password' => $password]);
+    }
+
+    public function actionExport() {
+        $this->view->title = "Экспорт данных";
+
+        if ($_SERVER["REQUEST_METHOD"] == "POST") {
+            $mainModel = new MainModel();
+            $type = $_POST["type"];
+            $password = trim($_POST['password']);
+            $mainModel->exportPassword($type, $password);
+        }
+        $this->render("export");
     }
 }
