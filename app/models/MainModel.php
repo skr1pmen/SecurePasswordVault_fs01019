@@ -143,14 +143,16 @@ class MainModel extends BaseModel
         return false;
     }
 
-    public function deletePassword($id) {
+    public function deletePassword($id)
+    {
         return $this->update(
             "UPDATE passwords SET deleted_at = NOW() WHERE id = :id",
             ["id" => $id]
         );
     }
 
-    public function getBasketData($user_id) {
+    public function getBasketData($user_id)
+    {
         $passwords = $this->select(
             "SELECT id, title FROM passwords 
                  WHERE user_id = :user_id AND deleted_at IS NOT NULL
@@ -164,7 +166,8 @@ class MainModel extends BaseModel
         return [];
     }
 
-    public function recoveryPassword($id) {
+    public function recoveryPassword($id)
+    {
         $result = $this->update(
             "UPDATE passwords SET deleted_at = NULL WHERE id = :id",
             ["id" => $id]
@@ -174,7 +177,8 @@ class MainModel extends BaseModel
         }
     }
 
-    public function destructionPassword($id) {
+    public function destructionPassword($id)
+    {
         $result = $this->delete(
             "DELETE FROM passwords WHERE id = :id",
             ["id" => $id]
@@ -184,7 +188,8 @@ class MainModel extends BaseModel
         }
     }
 
-    public function generatePassword($length, $useUppercase, $useDigits, $useSymbol) {
+    public function generatePassword($length, $useUppercase, $useDigits, $useSymbol)
+    {
         $lowercase = 'qwertyuiopasdfghjklzxcvbnm';
         $uppercase = 'QWERTYUIOPASDFGHJKLZXCVBNM';
         $digits = '1234567890';
@@ -211,7 +216,8 @@ class MainModel extends BaseModel
         return $passwords;
     }
 
-    public function exportPassword($type, $password) {
+    public function exportPassword($type, $password)
+    {
         $user = $this->select(
             "SELECT password FROM users WHERE id = :id",
             ['id' => $_SESSION['user']['id']]
@@ -231,36 +237,82 @@ class MainModel extends BaseModel
                     WHERE user_id = :id AND deleted_at IS NULL",
             ["id" => $_SESSION['user']['id']]
         );
+
+        for ($i = 0; $i < count($data); $i++) {
+            $data[$i]['password'] = stream_get_contents($data[$i]['password']);
+        }
+
         if ($type === "json") {
             // Формат JSON
-//            $fp = fopen('passwords.json', 'w');
-//            fwrite($fp, "[\n");
-//            $total = count($data);
-//            foreach ($data as $i => $item) {
-//                fwrite($fp, json_encode($item, JSON_UNESCAPED_UNICODE));
-//                if ($i < $total - 1) {
-//                    fwrite($fp, ",\n");
-//                } else {
-//                    fwrite($fp, "\n");
-//                }
-//            }
-//            fwrite($fp, "]");
-//            fclose($fp);
-//
-//            header('Content-Type: application/json');
-//            header('Content-Disposition: attachment; filename="passwords.json"');
-//            readfile('passwords.json');
-//            exit;
+            header("Content-Type: application/json");
+            header("Content-Disposition: attachment; filename=\"passwords.json\"");
 
+            $dataJson = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
 
-//            $dataJson = '';
-//            foreach ($data as $item) {
-//                $dataJson .= json_encode($item);
-//            }
-//            var_dump($dataJson);
+            file_put_contents("php://output", $dataJson);
+            exit;
         } else {
             // Формат CSV
+            header("Content-Type: text/csv; charset=utf-8");
+            header("Content-Disposition: attachment; filename=\"passwords.csv\"");
 
+            $out = fopen("php://output", 'w');
+            fwrite($out, "\xEF\xBB\xBF");
+
+            if (!empty($data)) {
+                fputcsv($out, array_keys($data[0]), ';');
+            }
+            foreach ($data as $item) {
+                fputcsv($out, $item, ';');
+            }
+            fclose($out);
+            exit;
         }
+    }
+
+    public function parseJson($content)
+    {
+        return json_decode($content, true);
+    }
+
+    public function parseCsv($content)
+    {
+        function detectDelimiter($line)
+        {
+            $semicolon = substr_count($line, ";");
+            $comma = substr_count($line, ",");
+            $tab = substr_count($line, "\t");
+
+            if ($tab > $semicolon && $tab > $comma) {
+                return "\t";
+            }
+            return $semicolon >= $comma ? ";" : ",";
+        }
+
+        $stream = fopen("php://temp", "r+");
+        fwrite($stream, $content);
+        rewind($stream);
+
+        $firstLine = fgets($stream);
+        $delimiter = detectDelimiter($firstLine);
+        rewind($stream);
+
+        $header = fgetcsv($stream, 0, $delimiter);
+        if (empty($header)) {
+            fclose($stream);
+            return [];
+        }
+
+        $header[0] = preg_replace("/^\xEF\xBB\xBF", '', $header[0]);
+
+        $rows = [];
+        while (($cells = fgetcsv($stream, 0, $delimiter)) !== false) {
+            if ($cells === [null]) continue;
+            $cells = array_pad($cells, count($header), null);
+            $rows[] = array_combine($header, array_slice($cells, 0, count($header)));
+        }
+
+        fclose($stream);
+        return $rows;
     }
 }

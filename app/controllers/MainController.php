@@ -166,4 +166,48 @@ class MainController extends InitController
         }
         $this->render("export");
     }
+
+    public function actionImport()
+    {
+        $this->view->title = "Импорт данных";
+
+        if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_FILES['import_file'])) {
+            $file = $_FILES['import_file'];
+
+            if ($file['error'] !== UPLOAD_ERR_OK) {
+                $_SESSION['error'] = "Ошибка загрузки: код " . $file['error'];
+                $this->redirect("/main/import");
+            }
+
+            if ($file['size'] > 10 * 1024 * 1024) {
+                $_SESSION['error'] = "Файл слишком велик!";
+                $this->redirect("/main/import");
+            }
+
+            $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+
+            $content = file_get_contents($file['tmp_name']);
+
+            $mainModel = new MainModel();
+
+            if ($ext === "json") {
+                $data = $mainModel->parseJson($content);
+            } elseif ($ext === "csv") {
+                $data = $mainModel->parseCsv($content);
+            } else {
+                $_SESSION['error'] = "Неподдерживаемый формат файла!";
+                $this->redirect("/main/import");
+            }
+
+            if (empty($data)) {
+                $_SESSION['error'] = "Файл пустой или не удалось распарсить!";
+                $this->redirect("/main/import");
+            }
+
+            $mainModel->importPasswords($data, $_SESSION['user']['id']);
+            $this->redirect("/");
+        }
+
+        $this->render("import");
+    }
 }

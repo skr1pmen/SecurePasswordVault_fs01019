@@ -8,7 +8,7 @@
 <a href="/main/export">Сохранить все данные</a>
 <a href="/main/import">Импорт данных</a>
 
-<div class="container">
+<div class="content">
     <h1><?= $userData['login'] ?></h1>
     <p><?= $userData['created_at'] ?></p>
     <hr>
