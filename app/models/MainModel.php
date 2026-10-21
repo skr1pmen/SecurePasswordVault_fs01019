@@ -303,7 +303,7 @@ class MainModel extends BaseModel
             return [];
         }
 
-        $header[0] = preg_replace("/^\xEF\xBB\xBF", '', $header[0]);
+        $header[0] = preg_replace("/^\xEF\xBB\xBF/", '', $header[0]);
 
         $rows = [];
         while (($cells = fgetcsv($stream, 0, $delimiter)) !== false) {
@@ -314,5 +314,35 @@ class MainModel extends BaseModel
 
         fclose($stream);
         return $rows;
+    }
+
+    public function importPasswords($passwords, $user_id)
+    {
+        foreach ($passwords as $password) {
+            $result = $this->select(
+                "SELECT id FROM passwords WHERE user_id = :user_id AND title = :title AND password = :password",
+                [
+                    "user_id" => $user_id,
+                    "title" => $password['title'],
+                    "password" => $password['password']
+                ]
+            );
+
+            if (!empty($result)) continue;
+
+            $this->insert(
+                "INSERT INTO passwords (user_id, title, password, url, category, notes, username) 
+                        VALUES (:user_id, :title, :password, :url, :category, :notes, :username)",
+                [
+                    "user_id" => $user_id,
+                    "title" => $password['title'],
+                    "password" => $password['password'],
+                    "url" => !empty($password['url']) ? $password['url'] : null,
+                    "category" => !empty($password['category']) ? $password['category'] : null,
+                    "notes" => !empty($password['notes']) ? $password['notes'] : null,
+                    "username" => !empty($password['username']) ? $password['username'] : null
+                ]
+            );
+        }
     }
 }
